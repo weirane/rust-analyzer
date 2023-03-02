@@ -41,9 +41,11 @@
         "test": "cross-env TEST_VARIABLE=test node ./out/tests/runTests.js"
     },
     "dependencies": {
+        "@svgdotjs/svg.js": "^3.1.2",
         "anser": "^2.1.1",
         "d3": "^7.6.1",
         "d3-graphviz": "^5.0.2",
+        "svgdom": "^0.1.13",
         "vscode-languageclient": "^8.0.2"
     },
     "devDependencies": {
@@ -104,6 +106,11 @@
             }
         ],
         "commands": [
+            {
+                "command": "rust-analyzer.toggleVisualization",
+                "title": "Toggle Visualization",
+                "category": "rust-analyzer"
+            },
             {
                 "command": "rust-analyzer.syntaxTree",
                 "title": "Show Syntax Tree",

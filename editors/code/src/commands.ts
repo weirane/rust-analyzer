@@ -12,9 +12,32 @@ import { isRustDocument, isCargoTomlDocument, sleep, isRustEditor } from "./util
 import { startDebugSession, makeDebugConfig } from "./debug";
 import { LanguageClient } from "vscode-languageclient/node";
 import { LINKED_COMMANDS } from "./client";
+import * as errorviz from "./errorviz";
+import { log } from "./util";
 
 export * from "./ast_inspector";
 export * from "./run";
+
+export function toggleVisualization(ctx: CtxInit): Cmd {
+    return async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor === undefined) {
+            log.error("no editor");
+            return;
+        }
+        const currline = editor.selection.active.line;
+        const totoggle = errorviz.G.diags.get(currline);
+        if (totoggle === undefined) {
+            log.info("nothing to toggle");
+            return;
+        }
+        if (totoggle.displayed) {
+            errorviz.G.hideDiag(currline);
+        } else {
+            errorviz.G.showDiag(currline);
+        }
+    };
+}
 
 export function analyzerStatus(ctx: CtxInit): Cmd {
     const tdcp = new (class implements vscode.TextDocumentContentProvider {

@@ -3,8 +3,9 @@ import * as lc from "vscode-languageclient/node";
 import * as vscode from "vscode";
 import * as ra from "../src/lsp_ext";
 import * as Is from "vscode-languageclient/lib/common/utils/is";
-import { assert } from "./util";
+import { assert, log } from "./util";
 import * as diagnostics from "./diagnostics";
+import * as errorviz from "./errorviz";
 import { WorkspaceEdit } from "vscode";
 import { Config, substituteVSCodeVariables } from "./config";
 import { randomUUID } from "crypto";
@@ -108,7 +109,7 @@ export async function createClient(
                 next: lc.HandleDiagnosticsSignature
             ) {
                 const preview = config.previewRustcOutput;
-                const errorCode = config.useRustcErrorCode;
+                const errorCode = true;
                 diagnosticList.forEach((diag, idx) => {
                     // Abuse the fact that VSCode leaks the LSP diagnostics data field through the
                     // Diagnostic class, if they ever break this we are out of luck and have to go
@@ -146,8 +147,29 @@ export async function createClient(
                             }),
                             value: value ?? "Click for full compiler diagnostic",
                         };
+                        const eline = diag.range.start.line;
+                        const odiag = errorviz.G.diags.get(eline);
+                        if (odiag === undefined) {
+                            errorviz.G.diags.set(eline, {
+                                diagnostics: diag,
+                                displayed: false,
+                                dectype: null,
+                                svg: null,
+                            });
+                        } else {
+                            odiag.diagnostics = diag;
+                            odiag.displayed = false;
+                            odiag.svg = null;
+                        }
                     }
                 });
+                errorviz.G.showTriangles();
+                // TODO: refresh active visualizations: move to save hook
+                for (const [k, v] of errorviz.G.diags) {
+                    if (v.displayed) {
+                        errorviz.G.showDiag(k);
+                    }
+                }
                 return next(uri, diagnosticList);
             },
             async provideHover(

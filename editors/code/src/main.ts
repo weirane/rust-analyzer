@@ -149,6 +149,7 @@ function createCommands(): Record<string, CommandFactory> {
             disabled: (_) => async () => {},
         },
 
+        toggleVisualization: { enabled: commands.toggleVisualization },
         analyzerStatus: { enabled: commands.analyzerStatus },
         memoryUsage: { enabled: commands.memoryUsage },
         shuffleCrateGraph: { enabled: commands.shuffleCrateGraph },
